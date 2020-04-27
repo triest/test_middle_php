@@ -1,2 +1,2 @@
 
-    <input type="button" class="btn btn-primary" onclick="window.location.href = '/task/create';" value="Создать задачу"/>
+    <input type="button" class="btn btn-primary" onclick="window.location.href = '/auch';" value="Создать задачу"/>
