@@ -12,7 +12,17 @@
 
 <div class="container">
     <div class="row">
-
+        <?
+            if ($_SESSION['auth_user'] == "" || $_SESSION['auth_user'] == null) {
+                ?>
+                <input type="button" class="btn btn-primary" onclick="window.location.href = '/auch';" value="Войти"/>
+                <?
+            } else {
+                ?>
+                <a href="/auch?action=logout">Выйти</a>
+                <?
+            }
+        ?>
         <?php
             include($contentPage);
         ?>

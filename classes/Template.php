@@ -37,6 +37,7 @@
                 trigger_error ('Layout `' . $this->layouts . '` does not exist.', E_USER_NOTICE);
                 return false;
             }
+
             if (file_exists($contentPage) == false) {
                 trigger_error ('Template `' . $name . '` does not exist.', E_USER_NOTICE);
                 return false;

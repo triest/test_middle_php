@@ -12,7 +12,8 @@
     include('config.php');
 
 // Соединяемся с БД
-// $dbObject = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
+    ob_start();
+    session_start();
 
 // подключаем ядро сайта
     include(SITE_PATH . DS . 'core' . DS . 'core.php');

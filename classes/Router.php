@@ -74,12 +74,20 @@
                 $this->controller = $controller;
             }
 
-            $action = array_shift($parts);
-            if (empty($action)) {
-                $this->action = 'index';
+            if(isset($_GET["action"])){
+                $action=$_GET["action"];
+            }else{
+                $action="index";
             }
 
-            $this->file = $cmd_path . $controller . '.php';
+        //    $action = array_shift($parts);
+            if (empty($action)) {
+                $this->action = 'index';
+            }else{
+                $this->action=$action;
+            }
+
+            $this->file = $cmd_path . $this->controller . '.php';
             $this->args = $parts;
         }
 
@@ -95,6 +103,14 @@
             include($this->file);
 
 
+
+            foreach (glob("models/*.php") as $filename)
+            {
+                include $filename;
+            }
+
+
+
             $class = 'Controller_' . $this->controller;
 
 
@@ -104,6 +120,7 @@
             if (is_callable($controller, $action) == false) {
              //        die ('404 Not Found');
             }
+            var_dump($action);
 
 
             // Выполняем экшен
