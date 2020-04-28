@@ -11,6 +11,11 @@
 
         public $layouts = "first_layouts";
 
+        function checkToken($token, $formName)
+        {
+            return $token === generateToken($formName);
+        }
+
         public function index()
         {
             /*
@@ -18,21 +23,22 @@
              * */
             $user = Model_Users::auth();
             if ($user == null) {
-                header("Location: /");
+                header("Location: /auch");
             }
 
             $rez = null;
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+               if (!isset($_POST["csrf_token"]) || !$this->checkToken($_POST["csrf_token"], "protectedForm")) {
+                    header("Location: /");
+                }
+
                 if (!isset($_POST["money"])) {
                     header("Location: /");
                 }
                 $money = $_POST["money"];
-
-
                 $rez = $user->write_off($money);
-
-
             }
             $balance = $user->getMoney();
             $this->template->vars('transaction', $rez);
@@ -59,28 +65,6 @@
             }
 
 
-        }
-
-        public function login()
-        {
-
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-                $email = $_POST["email"];
-                $password = $_POST["password"];
-                $user = new Model_Users();
-
-                if ($user->login($email, $password)) {
-                    header("Location: /");
-                } else {
-                    $this->template->vars('error', true);
-                    $this->template->view('login');
-                }
-            } else {
-
-                //  $this->template->vars('error', false);
-                $this->template->view('login');
-            }
         }
 
 

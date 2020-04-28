@@ -6,6 +6,25 @@
      * Time: 14:35
      */
 
+    /**
+     * generate CSRF token
+     *
+     * @author  Joe Sexton <joe@webtipblog.com>
+     * @param   string $formName
+     * @return  string
+     */
+    function generateToken( $formName )
+    {
+        $secretKey = 'gsfhs154aergz2#';
+        if ( !session_id() ) {
+            session_start();
+        }
+        $sessionId = session_id();
+
+        return sha1( $formName.$sessionId.$secretKey );
+
+    }
+
 // включим отображение всех ошибок
     error_reporting(E_ALL);
 // подключаем конфиг
@@ -14,6 +33,10 @@
 // Соединяемся с БД
     ob_start();
     session_start();
+
+    if (! isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = base64_encode(openssl_random_pseudo_bytes(32));
+    }
 
 // подключаем ядро сайта
     include(SITE_PATH . DS . 'core' . DS . 'core.php');

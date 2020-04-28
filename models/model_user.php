@@ -15,6 +15,11 @@
 
         public $id;
 
+        public $token;
+
+        public $password;
+
+        public $name;
 
         /**
          * Model_Users constructor.
@@ -28,14 +33,54 @@
 
         /**
          * @param $name
-         * @return null|User
+         * @return null|Model_Users
          */
         public function getUserByName($name)
         {
             global $mysqli;
 
-            if ($stmt = $mysqli->prepare("select `id`,`name`,`password` from `users` where `name`=? limit 1")) {
+            if ($stmt = $mysqli->prepare("select `id`,`name`,`password`,`token` from `users` where `name`=? limit 1")) {
                 $stmt->bind_param('s', $name);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result) {
+                    if ($result->num_rows > 0) {
+                        $user = new Model_Users();
+                        while ($row = $result->fetch_assoc()) {
+                            $user->id = $row["id"];
+                            $user->name = $row["name"];
+                            $user->passowrd = $row["password"];
+                        }
+                        return $user;
+                    }
+                } else {
+                    return null;
+                }
+
+            } else {
+                $error = $mysqli->errno . ' ' . $mysqli->error;
+                //    echo $error;
+                return $error;
+            }
+        }
+
+        public function getUserByToken()
+        {
+            global $mysqli;
+
+
+            if (!isset($_SESSION['auth_user']) || !isset($_SESSION['UID'])) {
+                return false;
+            }
+
+
+            $id = $_SESSION['UID'];
+
+            $token = $_SESSION['auth_user'];
+
+
+            if ($stmt = $mysqli->prepare("select `id`,`name`,`password` from `users` where `token`=? and `id`=? limit 1")) {
+                $stmt->bind_param('ss', $token, $id);
                 $stmt->execute();
                 $result = $stmt->get_result();
                 if ($result) {
@@ -105,40 +150,71 @@
             /*
              *оздаем
              * */
+            global $mysqli;
 
+            $user = $this->getUserByName($login);
+            echo "user by name";
 
-            $user = $this->getUserByEmail($login);
             if ($user == null) {
-                $user = $this->getUserByName($login);
-                if ($user == null) {
-                    return false;
-                }
+                return false;
             }
+
 
             $pass = md5($pass);
-            if ($login == $user->name && $pass == $user->password) {
-                $_SESSION['auth_user'] = $login;
-                return true;
+
+
+            if ($login == $user->name && strcasecmp($pass, $user->passowrd) == 0) {
+                /*генерируес токен */
+
+
+                $token = $user->token;
+                if ($user->token == null || $user->token == "") {
+                    $token = Model_Users::generateRandomString();
+                    $user->token = $token;
+                }
+
+
+                try {
+                    $mysqli->begin_transaction();
+                    if ($stmt = $mysqli->prepare("update users set `token`=? where `name`=? limit 1")) {
+                        $stmt->bind_param('ss', $token, $login);
+                        $stmt->execute();
+                        $mysqli->commit();
+                    }
+                    $_SESSION['auth_user'] = $user->token;
+                    $_SESSION['UID'] = $user->id;
+
+                    return true;
+                } catch (Exception $exception) {
+                    $mysqli->rollback();
+                    return false;
+                }
+
+            } else {
+
+                return false;
             }
-            return false;
+        }
+
+        public function getToken($login)
+        {
+            global $mysqli;
+            $mysqli->begin_transaction();
+
+
         }
 
 
         public function getMoney()
         {
             global $mysqli;
-            $login = $_SESSION['auth_user'];
 
-
-            if ($login == null || $login == "") {
-                header('Location: ' . '/auch?action=login');
-            }
 
             global $mysqli;
             try {
                 $mysqli->begin_transaction();
-                if ($stmt = $mysqli->prepare("select account from `users` where `name`=? limit 1")) {
-                    $stmt->bind_param('s', $login);
+                if ($stmt = $mysqli->prepare("select account from `users` where `id`=? limit 1")) {
+                    $stmt->bind_param('i', $this->id);
                     $stmt->execute();
                     $mysqli->commit();
                     $result = $stmt->get_result();
@@ -168,11 +244,13 @@
 
         public static function auth()
         {
-            $login = $_SESSION['auth_user'];
+            if (!isset($_SESSION['auth_user']) && $_SESSION['auth_user'] != "") {
+                return false;
+            }
+
 
             $user = new Model_Users();
-
-            $user = $user->getUserByName($login);
+            $user = $user->getUserByToken();
 
             return $user;
         }
@@ -186,13 +264,11 @@
         {
 
             $validate = $this->validate_money($money);
-            // var_dump($validate);
             if (!is_bool($validate)) {
                 return $validate;
             }
 
             $account = $this->getMoney();
-
 
             if ($money > $account) {
                 return "less money";
@@ -227,6 +303,12 @@
         {
             $money = floatval($money);
 
+            $check = number_format($money, 2);
+
+            if ($check != $money) {
+                return "invalid decimal places";
+            }
+
             if ($money == false) {
                 return "false float";
             }
@@ -236,13 +318,23 @@
                 return "is not numeric";
             }
 
-            //check is positive
             if ($money < 0) {
                 return "less zerro";
             }
 
             return true;
 
+        }
+
+        public static function generateRandomString($length = 50)
+        {
+            $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $charactersLength = strlen($characters);
+            $randomString = '';
+            for ($i = 0; $i < $length; $i++) {
+                $randomString .= $characters[rand(0, $charactersLength - 1)];
+            }
+            return $randomString;
         }
 
     }

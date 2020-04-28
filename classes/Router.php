@@ -117,11 +117,6 @@
             $controller = new $class($this->registry);
 
             $action = $this->action;
-            if (is_callable($controller, $action) == false) {
-             //        die ('404 Not Found');
-            }
-            var_dump($action);
-
 
             // Выполняем экшен
             $controller->$action();

@@ -20,7 +20,8 @@
                 $password = $_POST["password"];
                 $user = new Model_Users();
 
-                if ($user->login($email, $password)) {
+                $login = $user->login($email, $password);
+                if ($login) {
                     header("Location: /");
                 } else {
                     $this->template->vars('error', true);
@@ -40,8 +41,9 @@
                 $email = $_POST["email"];
                 $password = $_POST["password"];
                 $user = new Model_Users();
+                $login = $user->login($email, $password);
 
-                if ($user->login($email, $password)) {
+                if ($login) {
                     header("Location: /");
                 } else {
                     $this->template->vars('error', true);
