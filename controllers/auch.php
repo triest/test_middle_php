@@ -57,8 +57,9 @@
 
         public function logout()
         {
-
+            session_start();
             $_SESSION['auth_user'] = "";
+            session_write_close();
 
             header("Location: /");
         }

@@ -181,8 +181,10 @@
                         $stmt->execute();
                         $mysqli->commit();
                     }
+                    session_start();
                     $_SESSION['auth_user'] = $user->token;
                     $_SESSION['UID'] = $user->id;
+                    session_write_close();
 
                     return true;
                 } catch (Exception $exception) {
@@ -208,9 +210,6 @@
         public function getMoney()
         {
             global $mysqli;
-
-
-            global $mysqli;
             try {
                 $mysqli->begin_transaction();
                 if ($stmt = $mysqli->prepare("select account from `users` where `id`=? limit 1")) {
@@ -234,6 +233,7 @@
                 } else {
                     $error = $mysqli->errno . ' ' . $mysqli->error;
                     echo $error;
+                    $mysqli->rollback();
                 }
             } catch (Exception $exception) {
                 $mysqli->rollback();

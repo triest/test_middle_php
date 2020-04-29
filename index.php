@@ -13,15 +13,15 @@
      * @param   string $formName
      * @return  string
      */
-    function generateToken( $formName )
+    function generateToken($formName)
     {
         $secretKey = 'gsfhs154aergz2#';
-        if ( !session_id() ) {
+        if (!session_id()) {
             session_start();
         }
         $sessionId = session_id();
 
-        return sha1( $formName.$sessionId.$secretKey );
+        return sha1($formName . $sessionId . $secretKey);
 
     }
 
@@ -32,9 +32,11 @@
 
 // Соединяемся с БД
     ob_start();
-    session_start();
+    session_start([
+            'read_and_close' => true
+    ]);
 
-    if (! isset($_SESSION['csrf_token'])) {
+    if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = base64_encode(openssl_random_pseudo_bytes(32));
     }
 
