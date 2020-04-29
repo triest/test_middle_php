@@ -15,7 +15,7 @@
 
         public $id;
 
-        public $token;
+        private $token;
 
         public $password;
 
@@ -58,10 +58,10 @@
                 }
 
             } else {
-                $error = $mysqli->errno . ' ' . $mysqli->error;
-                //    echo $error;
-                return $error;
+                $error = $mysqli->errno . ' ' . $mysqli->error;                //    echo $error;
+                return null;
             }
+            return null;
         }
 
         public function getUserByToken()
@@ -70,7 +70,7 @@
 
 
             if (!isset($_SESSION['auth_user']) || !isset($_SESSION['UID'])) {
-                return false;
+                return null;
             }
 
 
@@ -98,15 +98,14 @@
                 }
 
             } else {
-                $error = $mysqli->errno . ' ' . $mysqli->error;
-                echo $error;
+                echo null;
             }
         }
 
 
         /**
          * @param $name
-         * @return null|User
+         * @return null|Model_Users
          */
         public function getUserByEmail($name)
         {
@@ -136,7 +135,7 @@
 
             } else {
                 $error = $mysqli->errno . ' ' . $mysqli->error;
-                echo $error;
+                return null;
             }
         }
 
@@ -153,7 +152,6 @@
             global $mysqli;
 
             $user = $this->getUserByName($login);
-            echo "user by name";
 
             if ($user == null) {
                 return false;
@@ -198,12 +196,9 @@
             }
         }
 
-        public function getToken($login)
+        public function getToken()
         {
-            global $mysqli;
-            $mysqli->begin_transaction();
-
-
+            return $this->token;
         }
 
 
@@ -218,13 +213,10 @@
                     $mysqli->commit();
                     $result = $stmt->get_result();
 
-                    if ($result) {
-
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
-                                $money = $row["account"];
-                                return $money;
-                            }
+                    if ($result && $result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            $money = $row["account"];
+                            return $money;
                         }
                     } else {
                         return null;
@@ -245,7 +237,7 @@
         public static function auth()
         {
             if (!isset($_SESSION['auth_user']) && $_SESSION['auth_user'] != "") {
-                return false;
+                return null;
             }
 
 
@@ -306,20 +298,20 @@
             $check = number_format($money, 2);
 
             if ($check != $money) {
-                return "invalid decimal places";
+                return "невенрое зачение центов";
             }
 
             if ($money == false) {
-                return "false float";
+                return "неверное число";
             }
 
             /**/
             if (!is_numeric($money)) {
-                return "is not numeric";
+                return "ввежено не число!";
             }
 
             if ($money < 0) {
-                return "less zerro";
+                return "Меньще 0";
             }
 
             return true;
@@ -336,5 +328,6 @@
             }
             return $randomString;
         }
+
 
     }

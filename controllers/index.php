@@ -26,11 +26,15 @@
                 header("Location: /auch");
             }
 
-            $rez = null;
+            $result = null;
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-               if (!isset($_POST["csrf_token"]) || !$this->checkToken($_POST["csrf_token"], "protectedForm")) {
+                if (!isset($_POST["csrf_token"]) || !$this->checkToken($_POST["csrf_token"], "protectedForm")) {
+                    header("Location: /");
+                }
+
+                if (!isset($_POST["id"]) || $_POST['id'] != $user->id) {
                     header("Location: /");
                 }
 
@@ -38,11 +42,12 @@
                     header("Location: /");
                 }
                 $money = $_POST["money"];
-                $rez = $user->write_off($money);
+                $result = $user->write_off($money);
             }
             $balance = $user->getMoney();
-            $this->template->vars('transaction', $rez);
+            $this->template->vars('transaction', $result);
             $this->template->vars('balance', $balance);
+            $this->template->vars('id', $user->id);
             $this->template->view('index');
         }
 
@@ -55,6 +60,10 @@
 
 
             $user = Model_Users::auth();
+
+            if ($user == null) {
+                header("Location: /auch");
+            }
 
             $rez = $user->write_off($money);
 

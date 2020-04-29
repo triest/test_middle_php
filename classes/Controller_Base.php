@@ -22,5 +22,4 @@
           $this->template = new Template($this->layouts, get_class($this));
       }
 
-      abstract function index();
     }

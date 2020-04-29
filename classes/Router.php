@@ -102,14 +102,10 @@
 
             include($this->file);
 
-
-
             foreach (glob("models/*.php") as $filename)
             {
                 include $filename;
             }
-
-
 
             $class = 'Controller_' . $this->controller;
 
