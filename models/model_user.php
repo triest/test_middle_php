@@ -298,7 +298,7 @@
             $check = number_format($money, 2);
 
             if ($check != $money) {
-                return "невенрое зачение центов";
+                return "неверное зачение центов";
             }
 
             if ($money == false) {
@@ -311,7 +311,7 @@
             }
 
             if ($money < 0) {
-                return "Меньще 0";
+                return "Меньше 0";
             }
 
             return true;
